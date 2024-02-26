@@ -1,14 +1,15 @@
 # Este apartado será utilizado para realizar el proprocesamiento de los datos 
 
 # Librerias necesarias 
-import pandas as pd 
+import pandas as pd
 import sqlite3 as sql 
 import A_Funciones as funciones
 import sys 
 
 # Agregar la ruta que contiene el archivo de funciones
 sys.path
-sys.path.append('C:\\Users\\jorge\\Desktop\\Proyecto RRHH')
+sys.path.append('C:\\Users\\jorge\\Desktop\\Proyecto RRHH')  # Agregamos ruta de colaborador 1 
+sys.path.append('C:\\Users\\ESTEBAN\\Desktop\\Proyecto_RRHH') # Agregamos ruta de colaborador 2
 sys.path
 
 # ------- Agregar datos desde GitHub -------------------------------------------------------------------------
@@ -58,7 +59,20 @@ df_general = df_general.drop(['Unnamed: 0', 'EmployeeCount', 'Over18'], axis = 1
 df_manager = df_manager.drop(['Unnamed: 0'], axis = 1)
 df_retirement = df_retirement.drop(['Unnamed: 0.1','Unnamed: 0', 'Attrition'], axis = 1)  # Aclarar por qué se eliminaron
 
+# ------------- Creamos conexión con SQL --------------------------#
+
+conn = sql.connect('C:\\Users\\ESTEBAN\\Desktop\\Proyecto_RRHH\\data\\db')
+curr = conn.cursor()
 
 
+# Movemos las tablas a la base de datos 
+df_employee.to_sql('employee', conn, if_exists='replace')
+df_general.to_sql('general', conn, if_exists='replace')
+df_manager.to_sql('manager', conn, if_exists= 'replace')
+df_retirement.to_sql('retirement', conn, if_exists= 'replace')
 
+# Verificamos las tablas que quedaron en la base de datos db 
+
+curr.execute("Select name from sqlite_master where type='table'") ### consultar bases de datos
+curr.fetchall()
 
