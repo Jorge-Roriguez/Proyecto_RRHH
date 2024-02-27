@@ -21,25 +21,11 @@ def ejecutar_sql (nombre_archivo, cur):
   cur.executescript(sql_as_string)
   
   
-def imputar_f (df,list_cat):  
-        
-    
-    df_c=df[list_cat]
-    df_n=df.loc[:,~df.columns.isin(list_cat)]
+def imputar_numericas (df):  
 
-    imputer_n=SimpleImputer(strategy='median')
-    imputer_c=SimpleImputer(strategy='most_frequent')
-
-    imputer_n.fit(df_n)
-    imputer_c.fit(df_c)
-
-    X_n=imputer_n.transform(df_n)
-    X_c=imputer_c.transform(df_c)
-
-    df_n=pd.DataFrame(X_n,columns=df_n.columns)
-    df_c=pd.DataFrame(X_c,columns=df_c.columns)
-
-    df =pd.concat([df_n,df_c],axis=1)
+    numericas = df.select_dtypes(include=['number']).columns
+    imp_mean = SimpleImputer(strategy='mean')
+    df[numericas] = imp_mean.fit_transform(df[numericas])
     return df
 
 
