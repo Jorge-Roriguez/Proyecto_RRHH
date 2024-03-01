@@ -7,8 +7,8 @@ import sys
 
 # Agregar la ruta que contiene el archivo de funciones
 sys.path
-sys.path.append('C:\\Users\\jorge\\Desktop\\Proyecto RRHH')  # Agregamos ruta de colaborador 1 
-sys.path.append('C:\\Users\\ESTEBAN\\Desktop\\Proyecto_RRHH') # Agregamos ruta de colaborador 2
+#sys.path.append('C:\\Users\\jorge\\Desktop\\Proyecto RRHH')  # Agregamos ruta de colaborador 1 
+#sys.path.append('C:\\Users\\ESTEBAN\\Desktop\\Proyecto_RRHH') # Agregamos ruta de colaborador 2
 sys.path
 
 import importlib 
@@ -98,7 +98,8 @@ df_retirement.isna().sum()
 
 # ------------- Creamos conexión con SQL --------------------------#
 
-conn = sql.connect('C:\\Users\\ESTEBAN\\Desktop\\Proyecto_RRHH\\data\\db')
+conn = sql.connect('C:\\Users\\jorge\\Desktop\\Proyecto RRHH\\data\\db')
+#conn = sql.connect('C:\\Users\\ESTEBAN\\Desktop\\Proyecto_RRHH\\data\\db')
 curr = conn.cursor()
 
 
@@ -109,31 +110,21 @@ df_manager.to_sql('manager', conn, if_exists= 'replace', index = False)
 df_retirement.to_sql('retirement', conn, if_exists= 'replace', index = False)
 
 # Verificamos las tablas que quedaron en la base de datos db 
-
 curr.execute("Select name from sqlite_master where type='table'") ### consultar bases de datos
 curr.fetchall()
 
-pd.read_sql("""SELECT * FROM employee""", conn)
-df_employee
 
 ## Traemos las bases de datos que se preprocesaron en sql. 
-
-funciones.ejecutar_sql('preprocesamientos.sql',curr)
 funciones.ejecutar_sql('preprocesamiento.sql', curr)
 
 curr.execute("select name from sqlite_master where type='table'")
 curr.fetchall()
 
-df_2015 =pd.read_sql("select * from tablal",conn)
+df_2015 =pd.read_sql("select * from tabla_2015",conn)
 df_2015
 
-df_2016 = pd.read_sql("select * from tabla2", conn)
+df_2016 = pd.read_sql("select * from tabla_2016", conn)
 df_2016
-
-
-tabla_completa = pd.concat([df_2015, df_2016], axis=0)
-tabla_completa
-
 
 #-----------------------------------------------------------------------
 
