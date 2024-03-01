@@ -115,6 +115,8 @@ curr.fetchall()
 
 
 ## Traemos las bases de datos que se preprocesaron en sql. 
+
+funciones.ejecutar_sql('preprocesamientos.sql',curr)
 funciones.ejecutar_sql('preprocesamiento.sql', curr)
 
 curr.execute("select name from sqlite_master where type='table'")
