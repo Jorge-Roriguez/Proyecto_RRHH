@@ -82,7 +82,6 @@ funciones.imputar_numericas(df_general, 'most_frequent')
 # Limpieza de df_retirement 
 # La estrategia de limpieza para esta tabla es eliminando los registros que la razón del retiro 
 # sea echado. 
-
 df_retirement
 filtro = df_retirement['retirementType'] != 'Fired'
 filtro
@@ -115,14 +114,12 @@ curr.fetchall()
 
 
 ## Traemos las bases de datos que se preprocesaron en sql. 
-
-funciones.ejecutar_sql('preprocesamientos.sql',curr)
 funciones.ejecutar_sql('preprocesamiento.sql', curr)
 
 curr.execute("select name from sqlite_master where type='table'")
 curr.fetchall()
 
-df_2015 =pd.read_sql("select * from tabla_2015",conn)
+df_2015 = pd.read_sql("select * from tabla_2015",conn)
 df_2015
 
 df_2016 = pd.read_sql("select * from tabla_2016", conn)
