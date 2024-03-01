@@ -42,7 +42,7 @@ SELECT *
 FROM retirement
 WHERE strftime('%Y', retirementDate) = '2016';
 
-CREATE TABLE tablal AS
+CREATE TABLE tabla1 AS
 SELECT * 
 FROM general1 g1
 JOIN employee1 e1
@@ -53,7 +53,7 @@ LEFT JOIN retirement1 r1
 	ON g1.EmployeeID = r1.EmployeeID;
 
 
-SELECT * FROM tablal;
+SELECT * FROM tabla1;
 	
 CREATE TABLE tabla2 AS
 SELECT * 
@@ -64,6 +64,132 @@ JOIN manager2 m2
 	ON g2.EmployeeID = m2.EmployeeID
 LEFT JOIN retirement2 r2
 	ON g2.EmployeeID = r2.EmployeeID;
-	
-SELECT * FROM tabla2;
 
+SELECT *
+FROM tabla2;
+
+CREATE TABLE retiros_2016 AS
+SELECT EmployeeID, retirementType AS retiro_2016
+FROM tabla2;
+
+SELECT * 
+FROM retiros_2016;
+
+CREATE TABLE tabla_20150 AS
+SELECT * 
+FROM tabla1 t1
+JOIN retiros_2016 r1
+	ON t1.EmployeeID = r1.EmployeeID;
+	
+CREATE TABLE tabla_2015 AS
+SELECT *,
+CASE
+	WHEN retiro_2016 = 'Resignation' THEN 1
+	ELSE 0
+END AS renuncia2016
+FROM tabla_20150;
+
+
+CREATE TABLE renuncias_2015 AS 
+SELECT * FROM tabla_2015
+WHERE retirementType = 'Resignation';
+
+SELECT * FROM renuncias_2015;
+
+
+SELECT * FROM tabla_2015;
+
+DELETE FROM tabla_2015
+WHERE retirementType = 'Resignation';
+
+SELECT * FROM tabla_2015;
+
+ALTER TABLE tabla_2015
+DROP COLUMN InfoDate;
+
+ALTER TABLE tabla_2015
+DROP COLUMN EmployeeID;
+
+ALTER TABLE tabla_2015
+DROP COLUMN 'EmployeeID:1';
+
+ALTER TABLE tabla_2015
+DROP COLUMN DateSurvey;
+
+ALTER TABLE tabla_2015
+DROP COLUMN 'EmployeeID:2';
+
+ALTER TABLE tabla_2015
+DROP COLUMN SurveyDate;
+
+ALTER TABLE tabla_2015
+DROP COLUMN 'EmployeeID:3';
+
+ALTER TABLE tabla_2015
+DROP COLUMN retirementDate;
+
+ALTER TABLE tabla_2015
+DROP COLUMN resignationReason;
+
+ALTER TABLE tabla_2015
+DROP COLUMN retirementType;
+
+ALTER TABLE tabla_2015
+DROP COLUMN 'EmployeeID:4';
+
+ALTER TABLE tabla_2015
+DROP COLUMN retiro_2016;
+
+SELECT * 
+FROM tabla_2015;
+
+
+-- Eliminaron los registros que renunciaron desde el 2015
+DELETE FROM tabla2
+WHERE EXISTS (
+    SELECT *
+    FROM renuncias_2015 r
+    WHERE r.EmployeeID = tabla2.EmployeeID
+);
+
+
+ALTER TABLE tabla2
+DROP COLUMN EmployeeID;
+
+ALTER TABLE tabla2
+DROP COLUMN InfoDate;
+
+ALTER TABLE tabla2
+DROP COLUMN 'EmployeeID:1';
+
+ALTER TABLE tabla2
+DROP COLUMN DateSurvey;
+
+ALTER TABLE tabla2
+DROP COLUMN 'EmployeeID:2';
+
+ALTER TABLE tabla2
+DROP COLUMN SurveyDate;
+
+ALTER TABLE tabla2
+DROP COLUMN 'EmployeeID:3';
+
+ALTER TABLE tabla2
+DROP COLUMN retirementDate;
+
+ALTER TABLE tabla2
+DROP COLUMN resignationReason;
+
+SELECT * 
+FROM tabla2;
+
+CREATE TABLE tabla_2016 AS
+SELECT * FROM tabla2; 
+
+SELECT * FROM tabla_2016;
+
+ALTER TABLE tabla_2016
+DROP COLUMN retirementType;
+
+SELECT * FROM tabla_2015;
+SELECT * FROM tabla_2016;
