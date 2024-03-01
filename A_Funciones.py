@@ -21,13 +21,20 @@ def ejecutar_sql (nombre_archivo, cur):
   cur.executescript(sql_as_string)
   
   
-def imputar_numericas (df):  
+def imputar_numericas (df, tipo):
 
-    numericas = df.select_dtypes(include=['number']).columns
-    imp_mean = SimpleImputer(strategy='mean')
-    df[numericas] = imp_mean.fit_transform(df[numericas])
-    return df
-
+    if str(tipo) == 'mean':
+        numericas = df.select_dtypes(include=['number']).columns
+        imp_mean = SimpleImputer(strategy='mean')
+        df[numericas] = imp_mean.fit_transform(df[numericas])
+        return df
+    
+    if str(tipo) == 'most_frequent':
+        numericas = df.select_dtypes(include=['number']).columns
+        imp_mean = SimpleImputer(strategy='most_frequent')
+        df[numericas] = imp_mean.fit_transform(df[numericas])
+        return df
+    
 
 def sel_variables(modelos,X,y,threshold):
     
@@ -81,6 +88,17 @@ def preparar_datos (df):
     X=X[var_names]
     
     
-    
-    
     return X
+
+
+def convertir_fecha(dataframe, columna):
+
+    dataframe[columna] = pd.to_datetime(dataframe[columna])
+
+    return dataframe.info()
+
+def convertir_fecha(dataframe, columna):
+
+    dataframe[columna] = pd.to_datetime(dataframe[columna])
+
+    return dataframe.info()

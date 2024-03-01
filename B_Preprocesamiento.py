@@ -11,7 +11,9 @@ sys.path.append('C:\\Users\\jorge\\Desktop\\Proyecto RRHH')  # Agregamos ruta de
 sys.path.append('C:\\Users\\ESTEBAN\\Desktop\\Proyecto_RRHH') # Agregamos ruta de colaborador 2
 sys.path
 
-import A_Funciones as funciones
+import importlib 
+import A_Funciones as funciones # Este archivo contiene las funciones a utilizar
+importlib.reload(funciones) # Actualiza los cambios en el archivo de las funciones
 
 # ------- Agregar datos desde GitHub -------------------------------------------------------------------------
 
@@ -43,11 +45,11 @@ df_manager.info()
 df_retirement.info()
 
 # Convertir formato de fecha 
-# Crear función
-df_employee['DateSurvey'] = pd.to_datetime(df_employee['DateSurvey']) #Revisar este formato
-df_general['InfoDate'] = pd.to_datetime(df_general['InfoDate'])
-df_manager['SurveyDate'] = pd.to_datetime(df_manager['SurveyDate'])
-df_retirement['retirementDate'] = pd.to_datetime(df_retirement['retirementDate'])
+funciones.convertir_fecha(df_employee, 'DateSurvey')
+funciones.convertir_fecha(df_general, 'InfoDate')
+funciones.convertir_fecha(df_manager, 'SurveyDate')
+funciones.convertir_fecha(df_retirement, 'retirementDate')
+
 
 # convertir los ID de los empleados a categórica
 df_employee = df_employee.astype({'EmployeeID' : object})
@@ -63,23 +65,19 @@ df_retirement = df_retirement.drop(['Unnamed: 0.1','Unnamed: 0', 'Attrition'], a
 
 
 # Observamos los nulos de cada tabla 
-# Crear función 
-
 df_employee.isna().sum()
 df_general.isna().sum() 
 df_manager.isna().sum()
 df_retirement.isna().sum() 
 
 
-# Limpiamos df_employee 
-funciones.imputar_numericas(df_employee)
-df_employee.isna().sum() # limpiar numericas 
+# Limpiamos nulos de df_employee 
+funciones.imputar_numericas(df_employee, 'most_frequent')
 
 
-# Limpiamos df_general 
-df_general[df_general['TotalWorkingYears'].isna()]
-funciones.imputar_numericas(df_general)
-df_general.isna().sum()
+# Limpiamos df_general  
+funciones.imputar_numericas(df_general, 'most_frequent')
+
 
 # Limpieza de df_retirement 
 # La estrategia de limpieza para esta tabla es eliminando los registros que la razón del retiro 
@@ -134,3 +132,7 @@ df_2016
 
 tabla_completa = pd.concat([df_2015, df_2016], axis=0)
 tabla_completa
+
+
+#-----------------------------------------------------------------------
+
