@@ -1,18 +1,17 @@
-# Este apartado será para disponer de todas las funciones requeridad para el proyecto de recursos humanos
+# Este apartado será para disponer de todas las funciones requeridas para el proyecto de recursos humanos
 
 
 # Librerias necesarias 
 import numpy as np
 import pandas as pd
-from sklearn.impute import SimpleImputer ### para imputación
+from sklearn.impute import SimpleImputer # Para imputación
 from sklearn.feature_selection import SelectFromModel
 from sklearn.model_selection import cross_val_predict, cross_val_score, cross_validate
 import joblib
-from sklearn.preprocessing import StandardScaler ## escalar variables 
+from sklearn.preprocessing import StandardScaler # Escalar variables 
 
-####Este archivo contienen funciones utiles a utilizar en diferentes momentos del proyecto
 
-###########Esta función permite ejecutar un archivo  con extensión .sql que contenga varias consultas
+# Esta función permite ejecutar un archivo  con extensión .sql que contenga varias consultas
 
 def ejecutar_sql (nombre_archivo, cur):
   sql_file=open(nombre_archivo)
@@ -67,10 +66,10 @@ def preparar_datos (df):
    
     
 
-    #######Cargar y procesar nuevos datos ######
+    ####### Cargar y procesar nuevos datos ######
    
     
-    #### Cargar modelo y listas 
+    # Cargar modelo y listas 
     
    
     list_cat=joblib.load("list_cat.pkl")
@@ -78,7 +77,7 @@ def preparar_datos (df):
     var_names=joblib.load("var_names.pkl")
     scaler=joblib.load( "scaler.pkl") 
 
-    ####Ejecutar funciones de transformaciones
+    # Ejecutar funciones de transformaciones
     
     df=imputar_f(df,list_cat)
     df_dummies=pd.get_dummies(df,columns=list_dummies)
