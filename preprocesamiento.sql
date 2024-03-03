@@ -91,7 +91,6 @@ CASE
 END AS renuncia2016
 FROM tabla_20150;
 
-SELECT * FROM tabla_2015;
 
 -- Creamos una tabla con las renuncias del 2015 
 CREATE TABLE renuncias_2015 AS 
@@ -105,9 +104,6 @@ WHERE retirementType = 'Resignation';
 -- Borramos columnas innecesarias en los datos 2015
 ALTER TABLE tabla_2015
 DROP COLUMN InfoDate;
-
-ALTER TABLE tabla_2015
-DROP COLUMN EmployeeID;
 
 ALTER TABLE tabla_2015
 DROP COLUMN 'EmployeeID:1';
@@ -139,6 +135,9 @@ DROP COLUMN 'EmployeeID:4';
 ALTER TABLE tabla_2015
 DROP COLUMN retiro_2016;
 
+ALTER TABLE tabla_2015
+DROP COLUMN StandardHours;
+
 
 -- Eliminaron los registros que renunciaron desde el 2015 en la tabla 2016
 DELETE FROM tabla2
@@ -150,9 +149,6 @@ WHERE EXISTS (
 
 
 -- Borramos columnas innecesarias en los datos 2016
-ALTER TABLE tabla2
-DROP COLUMN EmployeeID;
-
 ALTER TABLE tabla2
 DROP COLUMN InfoDate;
 
@@ -176,6 +172,9 @@ DROP COLUMN retirementDate;
 
 ALTER TABLE tabla2
 DROP COLUMN resignationReason;
+
+ALTER TABLE tabla2
+DROP COLUMN StandardHours;
 
 -- Renombramos la tabla2 a tabla_2016
 ALTER TABLE tabla2 RENAME TO tabla_2016;

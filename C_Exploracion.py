@@ -30,6 +30,19 @@ curr = conn.cursor()
 df_2015 = pd.read_sql("select * from tabla_2015", conn)
 df_2016 = pd.read_sql("select * from tabla_2016", conn)
 
+
+# ------------Convertimos los datos de tipo float a int (POR la naturaleza de cada variable) ---------
+
+df_2015 = df_2015.astype({'Age':'int64', 'DistanceFromHome':'int64', 'Education':'int64', 
+                          'JobLevel':'int64', 'NumCompaniesWorked':'int64', 
+                          'PercentSalaryHike':'int64', 'StandardHours':'int64',
+                          'StockOptionLevel':'int64', 'TotalWorkingYears':'int64',
+                          'TrainingTimesLastYear':'int64', 'YearsAtCompany':'int64',
+                          'YearsSinceLastPromotion':'int64', 'YearsWithCurrManager': 'int64',
+                          'EnvironmentSatisfaction':'int64', 'JobSatisfaction':'int64',
+                          'WorkLifeBalance':'int64', 'MonthlyIncome':'int64'})
+
+
 # ----------------------------- Análisis univariado variable respuesta -----------------------------
 
 # Histograma renuncias de empleados en 2016
@@ -73,40 +86,79 @@ print("Empleados por departamento: \n",
       "\nSales: ", base['count'][2], 
       "\nHuman Resources: ", base['count'][0])
 
-# ----------------------------- Matriz de coorrelación  -----------------------------
+df_2015.dtypes
 
-figure(figsize = (17, 10), dpi = 70);
-sns.heatmap(df_2015._get_numeric_data().corr(), annot = True);
-
-
-# Convertimos los datos de tipo float a int (POR la naturaleza de cada variable)
-df_2015 = df_2015.astype({'Age':'int64', 'DistanceFromHome':'int64', 'Education':'int64', 
-                          'JobLevel':'int64', 'NumCompaniesWorked':'int64', 
-                          'PercentSalaryHike':'int64', 'StandardHours':'int64',
-                          'StockOptionLevel':'int64', 'TotalWorkingYears':'int64',
-                          'TrainingTimesLastYear':'int64', 'YearsAtCompany':'int64',
-                          'YearsSinceLastPromotion':'int64', 'YearsWithCurrManager': 'int64',
-                          'EnvironmentSatisfaction':'int64', 'JobSatisfaction':'int64',
-                          'WorkLifeBalance':'int64', 'MonthlyIncome':'int64'})
-
-# ----------------------------- Análsis univariado variable edad de empleados --------
+# ----------------------------- Análisis univariado variable edad de empleados ------------------------
 
 # Histograma y boxplot de la edad de los empleados en 2015
-fig = make_subplots(rows=1, cols=2)
+fig = make_subplots(rows = 1, cols = 2)
 
 fig.add_trace(
-    go.Histogram(x=df_2015['Age'], name='Histograma años de empleados', marker_color='cadetblue'),
-    row=1, col=1
+    go.Histogram(x = df_2015['Age'], name = 'Histograma años de empleados', marker_color = 'cadetblue'),
+    row = 1, col = 1
 )
 
 fig.add_trace(
-    go.Box(y=df_2015['Age'], name='Boxplot años de empleados', marker_color='firebrick'),
-    row=1, col=2
+    go.Box(y = df_2015['Age'], name = 'Boxplot años de empleados', marker_color = 'firebrick'),
+    row = 1, col = 2
 )
 
 fig.update_layout(
-    title_text="Distribución de edad de los empleados",
-    template='simple_white')
+    title_text = "Distribución de edad de los empleados",
+    template = 'simple_white')
 fig.show()
 
 fig_edad = fig    # Guardamos los gráficos
+
+# ----------------------------- Análisis univariado satisfacción entorno de trabajo ------------------
+
+# Diagrama del nivel de satisfacción laboral en 2015
+base = df_2015.groupby(['EnvironmentSatisfaction'])[['renuncia2016']].count().reset_index()
+
+cant = df_2015['EnvironmentSatisfaction'].count()
+
+fig = px.pie(base , values = 'renuncia2016', names = 'EnvironmentSatisfaction', title = '<b>Nivel de satisfacción laboral<b>',
+             hole = .5)
+
+fig.update_layout(
+    template = 'simple_white',
+    legend_title = '<b>Ambiente laboral<b>',
+    title_x = 0.5,
+    annotations = [dict(text = 'Muestras:<br>'+str(cant), x=0.5, y = 0.5, font_size = 20, showarrow = False)])
+
+fig.show()
+
+fig_ambiente_lab = fig  # Guardamos la figura 
+
+
+# Información complementaria - Porcentaje de renuncias en un ambiente laboral bajo
+consulta = df_2015[['EnvironmentSatisfaction','renuncia2016']]
+cons = consulta[consulta['EnvironmentSatisfaction'] == 1].sum()
+
+print("Empleados que renuncian en un ambiente laboral bajo: ", cons.iloc[1], 
+      "\nLo que equivale a un: ", round(cons.iloc[1]/df_2015['renuncia2016'].sum()*100,2),
+      "% del total de renuncias")
+
+# ----------------------------- Matriz de coorrelación  ----------------------------------------------
+
+figure(figsize = (17, 10), dpi = 70);
+fig_correlación = sns.heatmap(df_2015._get_numeric_data().corr(), annot = True);
+fig_correlación
+
+# ----------------------------- Análisis bivariado Renuncias por departamentos ------------------------
+
+# ----------------------------- Análisis bivariado Renuncias por edad ---------------------------------
+
+# ----------------------------- Análisis bivariado Renuncias por ambiente laboral ---------------------
+
+# Renuncias en cada sastisfacción del ambiente laboral (bajo, medio, alto y muy alto)
+renuncias = df_2015[df_2015['renuncia2016'] == 1]
+base = renuncias.groupby(['EnvironmentSatisfaction'])[['renuncia2016']].count().reset_index()
+base
+
+# Complementamos la información 
+fig_ambiente_lab
+sns.barplot(x = "EnvironmentSatisfaction", y = "renuncia2016", data = base, palette = "Blues_d")
+
+print("Apesar de la proporción desigual de empleados en los distintos niveles de ambiente laboral,",
+      "\nLa cantidad de renuncias no se ven discrimindas por el ambiente laboral")
