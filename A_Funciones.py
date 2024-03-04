@@ -101,3 +101,43 @@ def convertir_fecha(dataframe, columna):
     dataframe[columna] = pd.to_datetime(dataframe[columna])
 
     return dataframe.info()
+
+
+def clasificador_jobrole(df, nombre_columna):
+    df[nombre_columna] = df[nombre_columna].astype('category')
+
+    # Definimos las categorías y cómo las vamos a recategorizar 
+    diccionario_rol = {
+        'Healthcare Representative': 'Research & Development',
+        'Research Scientist': 'Research & Development',
+        'Sales Executive': 'Sales',
+        'Human Resources': 'Human Resources',
+        'Research Director': 'Research & Development',
+        'Laboratory Technician': 'Research & Development',
+        'Manufacturing Director': 'Research & Development',
+        'Sales Representative': 'Sales',
+        'Manager': 'Manager'
+    }
+
+    # Creamos una columna nueva que contenga la recategorización 
+    df["job_rol"] = df[nombre_columna].replace(diccionario_rol)
+
+    return df
+
+def clasificador_education(df, nombre_columna):
+    df[nombre_columna] = df[nombre_columna].astype('category')
+
+    # Definimos las categorías y cómo las vamos a recategorizar 
+    diccionario_educacion = {
+        'Life Sciences': 'Research',
+        'Other': 'Research',
+        'Medical': 'Research',
+        'Technical Degree': 'Research',
+        'Marketing': 'Marketing',
+        'Human Resources': 'Human Resources',
+    }
+
+    # Creamos una columna nueva que contenga la recategorización 
+    df["education_sector"] = df[nombre_columna].replace(diccionario_educacion)
+
+    return df
