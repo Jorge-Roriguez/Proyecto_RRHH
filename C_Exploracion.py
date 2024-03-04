@@ -35,7 +35,7 @@ df_2016 = pd.read_sql("select * from tabla_2016", conn)
 
 df_2015 = df_2015.astype({'Age':'int64', 'DistanceFromHome':'int64', 'Education':'int64', 
                           'JobLevel':'int64', 'NumCompaniesWorked':'int64', 
-                          'PercentSalaryHike':'int64', 'StandardHours':'int64',
+                          'PercentSalaryHike':'int64', 'EmployeeID':'object',
                           'StockOptionLevel':'int64', 'TotalWorkingYears':'int64',
                           'TrainingTimesLastYear':'int64', 'YearsAtCompany':'int64',
                           'YearsSinceLastPromotion':'int64', 'YearsWithCurrManager': 'int64',
@@ -65,10 +65,11 @@ print("La cantidad de renuncias de empleados en 2016 es: ", df_2015['renuncia201
       "\nLo que equivale a: ", round(df_2015['renuncia2016'].sum()/len(df_2015) * 100, 2), 
       "% de los empleados de la compañia")
 
+
 # ----------------------------- Análisis univariado variable departament -----------------------------
 
 # Diagrama de tortas para los empleados por departamentos en 2015
-base = df_2015.groupby(['Department'])[['renuncia2016']].count().reset_index().sort_values('renuncia2016', ascending = False).rename(columns ={'renuncia2016':'count'})
+base = df_2015.groupby(['Department'])[['EmployeeID']].count().reset_index().sort_values('EmployeeID', ascending = False).rename(columns ={'EmployeeID':'count'})
 
 fig = px.pie(base, names = 'Department', values = 'count', title ='<b>Empleados por departamento<b>')
 
@@ -86,7 +87,6 @@ print("Empleados por departamento: \n",
       "\nSales: ", base['count'][2], 
       "\nHuman Resources: ", base['count'][0])
 
-df_2015.dtypes
 
 # ----------------------------- Análisis univariado variable edad de empleados ------------------------
 
@@ -110,14 +110,15 @@ fig.show()
 
 fig_edad = fig    # Guardamos los gráficos
 
+
 # ----------------------------- Análisis univariado satisfacción entorno de trabajo ------------------
 
 # Diagrama del nivel de satisfacción laboral en 2015
-base = df_2015.groupby(['EnvironmentSatisfaction'])[['renuncia2016']].count().reset_index()
+base = df_2015.groupby(['EnvironmentSatisfaction'])[['EmployeeID']].count().reset_index()
 
 cant = df_2015['EnvironmentSatisfaction'].count()
 
-fig = px.pie(base , values = 'renuncia2016', names = 'EnvironmentSatisfaction', title = '<b>Nivel de satisfacción laboral<b>',
+fig = px.pie(base , values = 'EmployeeID', names = 'EnvironmentSatisfaction', title = '<b>Nivel de satisfacción laboral<b>',
              hole = .5)
 
 fig.update_layout(
@@ -139,26 +140,41 @@ print("Empleados que renuncian en un ambiente laboral bajo: ", cons.iloc[1],
       "\nLo que equivale a un: ", round(cons.iloc[1]/df_2015['renuncia2016'].sum()*100,2),
       "% del total de renuncias")
 
+
+# ----------------------------- Análisis bivariado Renuncias por departamentos ------------------------
+
+renuncias = df_2015[df_2015['renuncia2016'] == 1]
+base = renuncias.groupby(['Department'])[['renuncia2016']].count().reset_index()
+
+grap_renVSdep = sns.barplot(x = "Department", y = "renuncia2016", data = base, hue = 'Department');
+print("Porcentajes de retiros por departamento: ",
+      "\nHuman Resources: ",round(base['renuncia2016'].iloc[0]/base['renuncia2016'].sum()*100, 2),"%",
+      "\nResearch & Development: ",round(base['renuncia2016'].iloc[1]/base['renuncia2016'].sum()*100, 2),"%",
+      "\nSales: ",round(base['renuncia2016'].iloc[2]/base['renuncia2016'].sum()*100, 2),"%")
+
+
+# ----------------------------- Análisis bivariado Renuncias por edad ---------------------------------
+
+base = renuncias.groupby(['Age'])[['renuncia2016']].count().reset_index()
+
+grap_renVSage = sns.lineplot(x = 'Age', y = 'renuncia2016', data = base)
+print('El aumento en la edad de los empleados no implica mayor cantidad de retiros',
+      '\nEntre los empleados con 25 a 35 años es dónde se presentan mayores retiros')
+
+
+# ----------------------------- Análisis bivariado Renuncias por ambiente laboral ---------------------
+
+base = renuncias.groupby(['EnvironmentSatisfaction'])[['renuncia2016']].count().reset_index()
+
+grap_renVSamb = sns.barplot(x = "EnvironmentSatisfaction", y = "renuncia2016", data = base, palette = "Blues_d");
+print("Apesar de la proporción desigual de empleados en los distintos niveles de ambiente laboral,",
+      "\nLa cantidad de renuncias no se ven discrimindas por el ambiente laboral")
+
+
 # ----------------------------- Matriz de coorrelación  ----------------------------------------------
 
 figure(figsize = (17, 10), dpi = 70);
 fig_correlación = sns.heatmap(df_2015._get_numeric_data().corr(), annot = True);
 fig_correlación
 
-# ----------------------------- Análisis bivariado Renuncias por departamentos ------------------------
 
-# ----------------------------- Análisis bivariado Renuncias por edad ---------------------------------
-
-# ----------------------------- Análisis bivariado Renuncias por ambiente laboral ---------------------
-
-# Renuncias en cada sastisfacción del ambiente laboral (bajo, medio, alto y muy alto)
-renuncias = df_2015[df_2015['renuncia2016'] == 1]
-base = renuncias.groupby(['EnvironmentSatisfaction'])[['renuncia2016']].count().reset_index()
-base
-
-# Complementamos la información 
-fig_ambiente_lab
-sns.barplot(x = "EnvironmentSatisfaction", y = "renuncia2016", data = base, palette = "Blues_d")
-
-print("Apesar de la proporción desigual de empleados en los distintos niveles de ambiente laboral,",
-      "\nLa cantidad de renuncias no se ven discrimindas por el ambiente laboral")
