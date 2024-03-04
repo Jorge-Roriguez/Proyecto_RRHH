@@ -9,6 +9,7 @@ from sklearn.feature_selection import SelectFromModel
 from sklearn.model_selection import cross_val_predict, cross_val_score, cross_validate
 import joblib
 from sklearn.preprocessing import StandardScaler # Escalar variables 
+from sklearn.feature_selection import RFE
 
 
 # Esta función permite ejecutar un archivo  con extensión .sql que contenga varias consultas
@@ -141,3 +142,20 @@ def clasificador_education(df, nombre_columna):
     df["education_sector"] = df[nombre_columna].replace(diccionario_educacion)
 
     return df
+
+
+def funcion_rfe(modelos,X,y, num_variables, paso):
+  resultados = {}
+  for modelo in modelos: 
+    rfemodelo = RFE(modelo, n_features_to_select = num_variables, step = paso)
+    fit = rfemodelo.fit(X,y)
+    var_names = fit.get_feature_names_out()
+    puntaje = fit.ranking_
+    diccionario_importancia = {}
+    nombre_modelo = modelo.__class__.__name__
+
+    for i,j in zip(var_names,puntaje):
+      diccionario_importancia[i] = j
+      resultados[nombre_modelo] = diccionario_importancia
+  
+  return resultados

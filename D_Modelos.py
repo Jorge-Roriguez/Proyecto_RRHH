@@ -3,13 +3,16 @@
 import pandas as pd
 import numpy as np
 import sqlite3 as sql
+
 import importlib
 import A_Funciones as funciones  # Archivo de funciones propias 
-importlib.reload(funciones) 
+importlib.reload(funciones)
+
 
 # Importar librerías de modelos candidatos 
 from sklearn.linear_model import LogisticRegression # Regresión logística
 from sklearn.svm import SVC # Support Vector Classifier
+from sklearn.ensemble import RandomForestClassifier  # Clasificador bosques aleatorios
 from sklearn.linear_model import SGDClassifier # Descenso de gradiente estocástico
 from xgboost import XGBClassifier # XGBoost 
 
@@ -63,8 +66,9 @@ df_2016 = pd.get_dummies(df_2015, dtype = int)
 
 # ----------------------------------- Selección de variables ----------------------------------------------#
 
-y = df_2015.renuncia2016 # Separamos variable objetivo
-X0 = df_2015.loc[:,~ df_2015.columns.isin(['renuncia2016'])] # Separamos variables explicativas de objetivo
+# Escalamos variables y separamos variables regresoras - variable objetivo
+y = df_2015.renuncia2016 
+X0 = df_2015.loc[:,~ df_2015.columns.isin(['renuncia2016'])]
 
 scaler = StandardScaler()
 scaler.fit(X0)
@@ -77,31 +81,21 @@ X
 # ---------------------------------- Métodos Wrapper ---------------------------------------------------- # 
 
 # Definimos los modelos a evaluar para selección de características 
-m_lr = LogisticRegression()
-m_svc = SVC()
+m_lr = LogisticRegression()  
+m_rf = RandomForestClassifier()
 m_SGD = SGDClassifier()
 m_xgb = XGBClassifier()
 
-modelos = list([m_lr,m_svc,m_SGD,m_xgb])
+modelos = list([m_lr,m_rf,m_SGD,m_xgb])
 
 
 # Eliminación hacia atrás (RFE)
 # Se entrena un modelo que contenga todos los K regresores 
 
 
-def recursive_feature_selection(X,y,model,k): # model = modelo que me va a servir de estimador
-  rfe = RFE(model, n_features_to_select=k, step=1) # step=1 cada cuanto el toma la decision de tomar una caracteristica
-  fit = rfe.fit(X, y)
-  X_new = fit.support_
-
-  print("Num Features: %s" % (fit.n_features_))
-  print("Selected Features: %s" % (fit.support_))
-  print("Feature Ranking: %s" % (fit.ranking_))
-
-  return X_new
-
-
-X_new = recursive_feature_selection(X,y,m_lr,20)
-
-df_new = X.iloc[:,X_new]
-df_new.head()
+# Con la siguiente función ejecutamos un RFE para la lista de modelos 
+# funciones.funcion_rfefuncion_rfe(modelos,X,y,20,1)
+# Convertimos el resultado en un dataframe para poder entender mejor los resultados 
+df_resultados = pd.DataFrame(funciones.funcion_rfe(modelos,X,y,20,1))
+df_resultados.fillna('No incluída',inplace=True)
+df_resultados
