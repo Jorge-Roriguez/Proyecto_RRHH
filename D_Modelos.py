@@ -11,7 +11,6 @@ importlib.reload(funciones)
 
 # Importar librerías de modelos candidatos 
 from sklearn.linear_model import LogisticRegression # Regresión logística
-from sklearn.svm import SVC # Support Vector Classifier
 from sklearn.ensemble import RandomForestClassifier  # Clasificador bosques aleatorios
 from sklearn.linear_model import SGDClassifier # Descenso de gradiente estocástico
 from xgboost import XGBClassifier # XGBoost 
@@ -63,7 +62,6 @@ df_2016.drop(['EducationField','JobRole'], axis = 1, inplace = True)
 df_2015 = pd.get_dummies(df_2015, dtype = int)
 df_2016 = pd.get_dummies(df_2015, dtype = int)
 
-
 # ----------------------------------- Selección de variables ----------------------------------------------#
 
 # Escalamos variables y separamos variables regresoras - variable objetivo
@@ -75,8 +73,6 @@ scaler.fit(X0)
 
 X1 = scaler.transform(X0)
 X = pd.DataFrame(X1 , columns = X0.columns)
-X
-
 
 # ---------------------------------- Métodos Wrapper ---------------------------------------------------- # 
 
@@ -92,10 +88,27 @@ modelos = list([m_lr,m_rf,m_SGD,m_xgb])
 # Eliminación hacia atrás (RFE)
 # Se entrena un modelo que contenga todos los K regresores 
 
+#Con la siguiente función ejecutamos un RFE para la lista de modelos 
+#funciones.funcion_rfe(modelos,X,y,20,1)
+#Convertimos el resultado en un dataframe para poder entender mejor los resultados 
 
-# Con la siguiente función ejecutamos un RFE para la lista de modelos 
-# funciones.funcion_rfefuncion_rfe(modelos,X,y,20,1)
-# Convertimos el resultado en un dataframe para poder entender mejor los resultados 
-df_resultados = pd.DataFrame(funciones.funcion_rfe(modelos,X,y,20,1))
+df_resultados = pd.DataFrame(funciones.funcion_rfe(modelos,X,y,25,1))
 df_resultados.fillna('No incluída',inplace=True)
 df_resultados
+
+
+
+# Creamos lista con variables seleccionadas tras analizar df_resultados 
+
+var_names = ['Department_Human Resources','Department_Research & Development',
+             'Department_Sales','Age','MonthlyIncome','EnvironmentSatisfaction',
+             'TrainingTimesLastYear','JobSatisfaction','NumCompaniesWorked',
+             'WorkLifeBalance','DistanceFromHome', 'PercentSalaryHike', 'StockOptionLevel',
+             'YearsAtCompany', 'JobInvolvement', 'BusinessTravel_Travel_Frequently',
+             'Gender_Female', 'Gender_Male', 'MaritalStatus_Single', 'MaritalStatus_Married']
+
+X2 = X[var_names] 
+
+# Matriz con variables seleccionadas 
+X2
+
