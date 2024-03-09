@@ -73,6 +73,7 @@ scaler.fit(X0)
 
 X1 = scaler.transform(X0)
 X = pd.DataFrame(X1 , columns = X0.columns)
+X
 
 # ---------------------------------- Métodos Wrapper ---------------------------------------------------- # 
 
@@ -98,7 +99,8 @@ df_resultados
 
 
 
-# Creamos lista con variables seleccionadas tras analizar df_resultados 
+# Creamos lista con variables seleccionadas tras analizar df_resultados y utilizar criterio de expertos
+# (Portafolio)
 
 var_names = ['Department_Human Resources','Department_Research & Development',
              'Department_Sales','Age','MonthlyIncome','EnvironmentSatisfaction',
@@ -107,8 +109,28 @@ var_names = ['Department_Human Resources','Department_Research & Development',
              'YearsAtCompany', 'JobInvolvement', 'BusinessTravel_Travel_Frequently',
              'Gender_Female', 'Gender_Male', 'MaritalStatus_Single', 'MaritalStatus_Married']
 
-X2 = X[var_names] 
+X2 = X[var_names]
 
 # Matriz con variables seleccionadas 
 X2
+
+
+# Medimos el desempeño de los modelos para todo el conjunto de datos y para las variables seleccionadas
+# Vamos a utilizar F1 - Score como métrica de desempeño, la variable objetivo está desbalanceada 
+
+
+f1_df = funciones.medir_modelos(modelos,'f1',X,y,5)
+f1_df
+
+f1_var_sel = funciones.medir_modelos(modelos, 'f1',X2,y,5)
+f1_var_sel
+
+f1_df.plot(kind='box')
+f1_var_sel.plot(kind='box')
+
+f1_df['xgboost_classifier'].mean()
+f1_var_sel['xgboost_classifier'].mean()
+
+# Observamos que el mejor desempeño lo tiene un XGBoost Classifier con el conjunto de variables 
+# seleccionadas. Se hará optimización de hiperparámetros para dicho algoritmo para dicho conjunto de datos. 
 
