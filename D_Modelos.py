@@ -19,9 +19,15 @@ from xgboost import XGBClassifier # XGBoost
 # Importar librerías para selección de variables 
 from sklearn.feature_selection import RFE # Método Wrapper - Eliminación hacia atrás 
 
+# Librerias para gráficas
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Importar librerías para validación cruzada 
 from sklearn.model_selection import cross_val_predict, cross_val_score, cross_validate
+
+# Librería para construir matriz de confusión 
+from sklearn.metrics import confusion_matrix
 
 # Importar otras librerías importantes
 from sklearn.preprocessing import StandardScaler # Para normalizar de datos
@@ -100,7 +106,7 @@ df_resultados
 
 
 # Creamos lista con variables seleccionadas tras analizar df_resultados y utilizar criterio de expertos
-# (Portafolio)
+# (Revista Portafolio)
 
 var_names = ['Department_Human Resources','Department_Research & Development',
              'Department_Sales','Age','MonthlyIncome','EnvironmentSatisfaction',
@@ -139,11 +145,8 @@ f1_var_sel['xgboost_classifier'].mean()
 
 m_xgb = XGBClassifier()
 
-hiper = m_xgb.get_params()
-hiper
-
 param_grid = [{'max_depth': [3,4,5,6], 'scale_pos_weight': [6.44], 
-               'eta':[0.01, 0.09, 0.1, 0.2],'subsample': [0.5,0.7,0.8,1] }]
+               'eta':[0.01, 0.09, 0.1, 0.2],'subsample': [0.5,0.7,0.8,1]}]
 
 
 # max_depth para evitar sobreajuste
@@ -157,7 +160,7 @@ param_grid = [{'max_depth': [3,4,5,6], 'scale_pos_weight': [6.44],
 # This makes predictions of 0 or 1, rather than producing probabilities.
 
 
-tun_rf=RandomizedSearchCV(m_xgb,param_distributions=param_grid,n_iter=10,scoring="f1")
+tun_rf=RandomizedSearchCV(m_xgb,param_distributions=param_grid,n_iter=5,scoring="f1")
 tun_rf.fit(X2,y)
 
 pd.set_option('display.max_colwidth', 100)
@@ -165,3 +168,34 @@ resultados=tun_rf.cv_results_
 tun_rf.best_params_
 pd_resultados=pd.DataFrame(resultados)
 pd_resultados[["params","mean_test_score"]].sort_values(by="mean_test_score", ascending=False)
+
+xg_final = tun_rf.best_estimator_
+
+
+### Evaluación para mirar sobreajuste
+
+eval = cross_validate(xg_final,X2,y,cv=5,scoring="f1",return_train_score=True)
+
+train = pd.DataFrame(eval['train_score'])
+test = pd.DataFrame(eval['test_score'])
+train_test=pd.concat([train, test],axis=1)
+train_test.columns=['train_score','test_score']
+
+train_test
+
+
+# Realizamos las predicciones 
+predictions = cross_val_predict(xg_final, X2, y, cv=5)
+pred_df = pd.DataFrame(predictions, columns=['pred'])
+
+# Añadimos la columna de predicciones a df_2015 pata evaluar rendimiento del modelo
+df_2015_con_pred = pd.concat([df_2015, pred_df], axis=1)
+
+# Construimos matriz de confusión 
+conf_matrix = confusion_matrix(df_2015['renuncia2016'], df_2015_con_pred['pred'])
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues")
+plt.xlabel('Valores predichos')
+plt.ylabel('Valores reales observados')
+plt.title('Matriz de confusión')
+plt.show()
