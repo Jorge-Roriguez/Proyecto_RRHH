@@ -44,7 +44,6 @@ curr = conn.cursor()
 # Leemos tablas 2015 y 2016 
 df_2015 = pd.read_sql("SELECT * FROM tabla_2015", conn)
 df_2016 = pd.read_sql("SELECT * FROM tabla_2016", conn)
-df_2015
 
 # ----------------------- Terminar preprocesado con Pandas ----------------------------------------#
 
@@ -113,7 +112,7 @@ var_names = ['Department_Human Resources','Department_Research & Development',
              'TrainingTimesLastYear','JobSatisfaction','NumCompaniesWorked',
              'WorkLifeBalance','DistanceFromHome', 'PercentSalaryHike', 'StockOptionLevel',
              'YearsAtCompany', 'JobInvolvement', 'BusinessTravel_Travel_Frequently',
-             'Gender_Female', 'Gender_Male', 'MaritalStatus_Single', 'MaritalStatus_Married']
+             'Gender_Female']
 
 X2 = X[var_names]
 
@@ -152,12 +151,8 @@ param_grid = [{'max_depth': [3,4,5,6], 'scale_pos_weight': [6.44],
 # max_depth para evitar sobreajuste
 # scale_pos_weight: Control the balance of positive and negative weights, useful for unbalanced classes.
 # A typical value to consider: sum(negative instances) / sum(positive instances)
-
 # En nuestro caso, no renuncian: 3769 y renuncian: 585
 # scale_pos_weight = 3769/585 = 6.44
-
-## binary:hinge: hinge loss for binary classification. 
-# This makes predictions of 0 or 1, rather than producing probabilities.
 
 
 tun_rf=RandomizedSearchCV(m_xgb,param_distributions=param_grid,n_iter=5,scoring="f1")
@@ -181,12 +176,16 @@ test = pd.DataFrame(eval['test_score'])
 train_test=pd.concat([train, test],axis=1)
 train_test.columns=['train_score','test_score']
 
-train_test
+train_test 
+
+
 
 
 # Realizamos las predicciones 
 predictions = cross_val_predict(xg_final, X2, y, cv=5)
-pred_df = pd.DataFrame(predictions, columns=['pred'])
+pred_df = pd.DataFrame(predictions, columns=['pred']) 
+
+
 
 # Añadimos la columna de predicciones a df_2015 pata evaluar rendimiento del modelo
 df_2015_con_pred = pd.concat([df_2015, pred_df], axis=1)
@@ -198,4 +197,25 @@ sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues")
 plt.xlabel('Valores predichos')
 plt.ylabel('Valores reales observados')
 plt.title('Matriz de confusión')
+plt.show()
+
+
+#------------------- Análisis de variables con mayor importancia ----------------------#
+importancia = xg_final.feature_importances_
+importancia 
+
+col_names = X2.columns
+
+# Crear un DataFrame con la importancia de las características
+importancia_df = pd.DataFrame({'Variable': col_names, 'Importancia': importancia})
+
+# Ordenar el DataFrame por importancia de las características
+importancia_df  = importancia_df.sort_values(by='Importancia', ascending=False)
+
+# Visualizar la importancia de las características
+plt.figure(figsize=(10, 6))
+plt.barh(importancia_df['Variable'], importancia_df['Importancia'])
+plt.xlabel('Importancia')
+plt.ylabel('Variable')
+plt.title('Peso de cada variable sobre la predicción')
 plt.show()
