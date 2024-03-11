@@ -12,40 +12,69 @@ from sklearn.preprocessing import StandardScaler # Escalar variables
 from sklearn.feature_selection import RFE
 
 
-# Esta función permite ejecutar un archivo  con extensión .sql que contenga varias consultas
-
+# Permite ejecutar un archivo  con extensión .sql que contenga varias consultas
 def ejecutar_sql (nombre_archivo, cur):
-  sql_file=open(nombre_archivo)
-  sql_as_string=sql_file.read()
+  sql_file = open(nombre_archivo)
+  sql_as_string = sql_file.read()
   sql_file.close
   cur.executescript(sql_as_string)
-  
-  
+
+
+# Imputa variables numéricas   
 def imputar_numericas (df, tipo):
 
     if str(tipo) == 'mean':
-        numericas = df.select_dtypes(include=['number']).columns
-        imp_mean = SimpleImputer(strategy='mean')
+        numericas = df.select_dtypes(include = ['number']).columns
+        imp_mean = SimpleImputer(strategy = 'mean')
         df[numericas] = imp_mean.fit_transform(df[numericas])
         return df
     
     if str(tipo) == 'most_frequent':
-        numericas = df.select_dtypes(include=['number']).columns
-        imp_mean = SimpleImputer(strategy='most_frequent')
+        numericas = df.select_dtypes(include = ['number']).columns
+        imp_mean = SimpleImputer(strategy = 'most_frequent')
         df[numericas] = imp_mean.fit_transform(df[numericas])
         return df
-    
 
-def sel_variables(modelos,X,y,threshold):
+
+# Imputar variables categóricas y numéricas
+def imputar_f (df, list_cat):  
+        
     
-    var_names_ac=np.array([])
+    df_c = df[list_cat]
+
+    df_n = df.loc[:,~df.columns.isin(list_cat)]
+
+    imputer_n = SimpleImputer(strategy = 'most_frequent')
+    imputer_c = SimpleImputer( strategy = 'most_frequent')
+
+    imputer_n.fit(df_n)
+    imputer_c.fit(df_c)
+    imputer_c.get_params()
+    imputer_n.get_params()
+
+    X_n = imputer_n.transform(df_n)
+    X_c = imputer_c.transform(df_c)
+
+    df_n = pd.DataFrame(X_n,columns = df_n.columns)
+    df_c = pd.DataFrame(X_c,columns = df_c.columns)
+    df_c.info()
+    df_n.info()
+
+    df = pd.concat([df_n, df_c], axis = 1)
+    return df
+
+
+# Selecciona modelos 
+def sel_variables(modelos, X, y, threshold):
+    
+    var_names_ac = np.array([])
     for modelo in modelos:
         #modelo=modelos[i]
         modelo.fit(X,y)
-        sel = SelectFromModel(modelo, prefit=True,threshold=threshold)
-        var_names= modelo.feature_names_in_[sel.get_support()]
-        var_names_ac=np.append(var_names_ac, var_names)
-        var_names_ac=np.unique(var_names_ac)
+        sel = SelectFromModel(modelo, prefit = True, threshold = threshold)
+        var_names = modelo.feature_names_in_[sel.get_support()]
+        var_names_ac = np.append(var_names_ac, var_names)
+        var_names_ac = np.unique(var_names_ac)
     
     return var_names_ac
 
@@ -62,31 +91,45 @@ def medir_modelos(modelos,scoring,X,y,cv):
     return metric_modelos
 
 
-
+# Esta función se encarga de cargar y procesar nuevos datos
 def preparar_datos (df):
-   
-    
 
-    ####### Cargar y procesar nuevos datos ######
-   
-    
-    # Cargar modelo y listas 
-    
-   
-    list_cat=joblib.load("list_cat.pkl")
-    list_dummies=joblib.load("list_dummies.pkl")
-    var_names=joblib.load("var_names.pkl")
-    scaler=joblib.load( "scaler.pkl") 
+    # Cargar modelo y listas
+    list_cat = joblib.load('Salidas\\list_cat.pkl')
+    list_dummies = joblib.load('Salidas\\list_dummies.pkl')
+    var_names = joblib.load('Salidas\\var_names.pkl')
+    scaler = joblib.load( 'Salidas\\scaler.pkl') 
+
+    # Recategorización de variables
+    clasificador_education(df, 'EducationField')
+    clasificador_jobrole(df,'JobRole')
+    df.drop(['EducationField','JobRole'], axis = 1, inplace = True)
 
     # Ejecutar funciones de transformaciones
-    
-    df=imputar_f(df,list_cat)
-    df_dummies=pd.get_dummies(df,columns=list_dummies)
-    df_dummies= df_dummies.loc[:,~df_dummies.columns.isin(['perf_2023','EmpID2'])]
-    X2=scaler.transform(df_dummies)
-    X=pd.DataFrame(X2,columns=df_dummies.columns)
-    X=X[var_names]
-    
+    df = imputar_f(df, list_cat)
+
+    df_dummies = pd.get_dummies(df, columns = list_dummies, dtype = int)
+    df_dummies = df_dummies.loc[:,~df_dummies.columns.isin(['EmployeeID'])]
+
+    # Ordenamos las variables en el orden de entrenamiento del escalar
+    df_dummies = df_dummies.reindex(['Age', 'DistanceFromHome', 'Education', 'JobLevel', 'MonthlyIncome',
+       'NumCompaniesWorked', 'PercentSalaryHike', 'StockOptionLevel',
+       'TotalWorkingYears', 'TrainingTimesLastYear', 'YearsAtCompany',
+       'YearsSinceLastPromotion', 'YearsWithCurrManager',
+       'EnvironmentSatisfaction', 'JobSatisfaction', 'WorkLifeBalance',
+       'JobInvolvement', 'PerformanceRating', 'BusinessTravel_Non-Travel',
+       'BusinessTravel_Travel_Frequently', 'BusinessTravel_Travel_Rarely',
+       'Department_Human Resources', 'Department_Research & Development',
+       'Department_Sales', 'Gender_Female', 'Gender_Male',
+       'MaritalStatus_Divorced', 'MaritalStatus_Married',
+       'MaritalStatus_Single', 'education_sector_Human Resources',
+       'education_sector_Research','education_sector_Marketing',
+       'job_rol_Research & Development', 'job_rol_Human Resources',
+       'job_rol_Manager', 'job_rol_Sales'], axis = 1)
+
+    X2 = scaler.transform(df_dummies)
+    X = pd.DataFrame(X2, columns = df_dummies.columns)
+    X = X[var_names]
     
     return X
 
