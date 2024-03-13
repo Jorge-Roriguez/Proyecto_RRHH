@@ -7,6 +7,9 @@ import sqlite3 as sql
 import joblib
 import numpy as np
 import openpyxl
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 
 import importlib
 import A_Funciones as funciones  # Archivo de funciones propias 
@@ -47,25 +50,110 @@ df_retiros_var = df_2016[['EmployeeID', 'Department', 'Age', 'MonthlyIncome', 'E
 df_retiros_var = pd.concat([df_retiros_var, df_pred], axis = 1)
  
 
-# -------------------------- Llevar datos a BD para despliegue -------------------------------------------------------------
+# -------------------------- Exportaciones de datos para despliegue  -------------------------------------------------------------
 
-# Retiros de los empleados por departamento (Diseño de la solución)
+# Retiros de los empleados por departamento (Diseño de la solución) datos al archivo DB
 df_retiros_var.loc[:, ['EmployeeID', 'Department', 'pred_retiros_2017']].to_sql('retiros_pred', conn, if_exists = 'replace', index = False)
 
-
-# -------------------------- Predicciones por departamento -----------------------------------
-
+# Retiros de los empleados por departamento (Diseño de la solución) datos al archivo excel
 retiros = df_retiros_var[df_retiros_var['pred_retiros_2017'] == 1]
-retiros_dep = retiros.groupby(['Department'])[['pred_retiros_2017']].count().reset_index()
-retiros_dep
-
-
-# -------------------------- Exportar los resultados de interés --------------------------
-
-# Retiros por departamentos
 df_predicciones_2017 = retiros[['EmployeeID', 'Department', 'pred_retiros_2017']]
 df_predicciones_2017.set_index('EmployeeID', inplace = True) 
 df_predicciones_2017.to_excel('Salidas\\df_predicciones_2017.xlsx')
 
+no_retiros = df_retiros_var[df_retiros_var['pred_retiros_2017'] == 0] # Datos de las personas que no se retiran
 
 # -------------------------- Análsis exploratorio de los resultados --------------------------
+
+# Base de datos lista a trabajar 'retiros'
+
+# Diagrama de tortas para los empleados retirados por cada departamento
+retiros_dep = retiros.groupby(['Department'])[['pred_retiros_2017']].count().reset_index()
+
+fig = px.pie(retiros_dep, names = 'Department', values = 'pred_retiros_2017', title ='<b>Renuncias de empleados por departamento<b>')
+
+fig.update_layout(
+    xaxis_title = 'retiros en cada departamento',
+    yaxis_title = 'Cantidad',
+    template = 'simple_white',
+    title_x = 0.5)
+
+valores = retiros_dep['pred_retiros_2017'].tolist()
+fig.update_traces(textinfo = 'percent+value', textposition = 'inside', textfont = dict(size = 12))
+
+fig.show();
+
+# Importancias de las variables para el modelo 
+importancia = m_xg.feature_importances_
+col_names = df_t.columns
+
+importancia_df = pd.DataFrame({'Variable': col_names, 'Importancia': importancia}).sort_values(by = 'Importancia', ascending = False)
+
+
+# -------------------------- Anlaisis departamento de Research & Development --------------------------
+
+# DataSet para empleados que renuncian del departamento 'Research & Development'
+df_Research_1 = retiros[retiros['Department'] == 'Research & Development']
+df_Research_0 = no_retiros[no_retiros['Department'] == 'Research & Development']
+
+
+#                                ********* Businnes Travel *********
+
+# Análisis de los viajes con fines laborales de los empleados retirados y no retirados
+
+fig = make_subplots(rows = 1, cols = 2)
+fig.add_trace(
+    go.Histogram(x = df_Research_1['BusinessTravel'], name = 'Empleados que renuncian', marker_color = 'red'),
+    row = 1, col = 1
+)
+
+fig.add_trace(
+    go.Histogram(x = df_Research_0['BusinessTravel'], name = 'Empleados que no renuncian', marker_color = 'green'),
+    row = 1, col = 2
+)
+
+fig.update_layout(
+    title_text = "Histograma de los viajes respecto a negocios",
+    template = 'simple_white')
+fig.show();
+
+
+#                                ********* Years At Company *********
+
+# Análisis de los años en la compañía que tienen los empleados retirados y no retirados
+years_1 = df_Research_1.groupby(['YearsAtCompany'])[['EmployeeID']].count().reset_index()
+
+fig = px.line(years_1, x = 'YearsAtCompany', y = 'EmployeeID')
+fig.update_layout(
+    title ='<b>Renuncias por años en la compañía<b>',
+    xaxis_title = 'Años',
+    yaxis_title = 'Cantidad',
+    template = 'simple_white',
+    title_x = 0.5)
+fig.show()
+
+years_0 = df_Research_0.groupby(['YearsAtCompany'])[['EmployeeID']].count().reset_index()
+
+fig = px.line(years_0, x = 'YearsAtCompany', y = 'EmployeeID')
+fig.update_layout(
+    title ='<b>Permanencia en la compañía<b>',
+    xaxis_title = 'Años',
+    yaxis_title = 'Cantidad',
+    template = 'simple_white',
+    title_x = 0.5)
+fig.show()
+
+
+# -------------------------- Anlaisis Sales ------------------------------------------------------
+
+# DataSet para empleados que renuncian del departamento 'Sales'
+df_Sales_1 = retiros[retiros['Department'] == 'Sales']
+df_Sales_0 = no_retiros[no_retiros['Department'] == 'Sales']
+
+
+# -------------------------- Anlaisis Human Resources --------------------------------------------
+
+# DataSet para empleados que renuncian del departamento 'Human Resources'
+df_Human_1 = retiros[retiros['Department'] == 'Human Resources']
+df_Human_0 = no_retiros[no_retiros['Department'] == 'Human Resources']
+
