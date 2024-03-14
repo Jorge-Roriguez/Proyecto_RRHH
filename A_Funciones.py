@@ -1,5 +1,6 @@
 # Este apartado será para disponer de todas las funciones requeridas para el proyecto de recursos humanos
 
+# ------------------------------- Librerias necesarias ------------------------------- 
 
 # Librerias necesarias 
 import numpy as np
@@ -10,7 +11,11 @@ from sklearn.model_selection import cross_val_predict, cross_val_score, cross_va
 import joblib
 from sklearn.preprocessing import StandardScaler # Escalar variables 
 from sklearn.feature_selection import RFE
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+import plotly.express as px
 
+# ------------------------------- Funciones ------------------------------- 
 
 # Permite ejecutar un archivo  con extensión .sql que contenga varias consultas
 def ejecutar_sql (nombre_archivo, cur):
@@ -79,19 +84,20 @@ def sel_variables(modelos, X, y, threshold):
     return var_names_ac
 
 
-def medir_modelos(modelos,scoring,X,y,cv):
+# Validación del rendimiento de los modelos 
+def medir_modelos(modelos, scoring, X, y, cv):
 
-    metric_modelos=pd.DataFrame()
+    metric_modelos = pd.DataFrame()
     for modelo in modelos:
-        scores=cross_val_score(modelo,X,y, scoring=scoring, cv=cv )
-        pdscores=pd.DataFrame(scores)
-        metric_modelos=pd.concat([metric_modelos,pdscores],axis=1)
+        scores = cross_val_score(modelo, X, y, scoring = scoring, cv = cv )
+        pdscores = pd.DataFrame(scores)
+        metric_modelos = pd.concat([metric_modelos,pdscores], axis = 1)
     
-    metric_modelos.columns=["logistic_r","rf_classifier","sgd_classifier","xgboost_classifier"]
+    metric_modelos.columns = ["logistic_r","rf_classifier","sgd_classifier","xgboost_classifier"]
     return metric_modelos
 
 
-# Esta función se encarga de cargar y procesar nuevos datos
+# Cargar y procesar nuevos datos (Transformación)
 def preparar_datos (df):
 
     # Cargar modelo y listas
@@ -134,19 +140,15 @@ def preparar_datos (df):
     return X
 
 
+# Convertir el tipo de dato a fecha
 def convertir_fecha(dataframe, columna):
 
     dataframe[columna] = pd.to_datetime(dataframe[columna])
 
     return dataframe.info()
 
-def convertir_fecha(dataframe, columna):
 
-    dataframe[columna] = pd.to_datetime(dataframe[columna])
-
-    return dataframe.info()
-
-
+# Recategorización de variables por departamentos dado el Rol de trabajo
 def clasificador_jobrole(df, nombre_columna):
     df[nombre_columna] = df[nombre_columna].astype('category')
 
@@ -168,6 +170,8 @@ def clasificador_jobrole(df, nombre_columna):
 
     return df
 
+
+# Recategorización de variables por departamentos dado la educación
 def clasificador_education(df, nombre_columna):
     df[nombre_columna] = df[nombre_columna].astype('category')
 
@@ -187,6 +191,7 @@ def clasificador_education(df, nombre_columna):
     return df
 
 
+# RFE para la selección de variables para distintos modelos
 def funcion_rfe(modelos,X,y, num_variables, paso):
   resultados = {}
   for modelo in modelos: 
@@ -202,3 +207,52 @@ def funcion_rfe(modelos,X,y, num_variables, paso):
       resultados[nombre_modelo] = diccionario_importancia
   
   return resultados
+
+
+# Diagrama de barras para despliegue de resultados 
+def histogram(df1, df2,  columna, name1, name2, color1, color2, titulo):
+
+    fig = make_subplots(rows = 1, cols = 2)
+    fig.add_trace(
+        go.Histogram(x = df1[columna], name = name1, marker_color = color1),
+        row = 1, col = 1
+    )
+
+    fig.add_trace(
+        go.Histogram(x = df2[columna], name = name2, marker_color = color2),
+        row = 1, col = 2
+    )
+
+    fig.update_layout(
+        title_text = titulo,
+        template = 'simple_white')
+    fig.show();   
+
+
+# Diagrama de lineas para despliegue de resultados
+def line(df, columna1, columna2, titulo, xlabel, ylabel): 
+
+    years_1 = df.groupby([columna1])[[columna2]].count().reset_index()
+
+    fig = px.line(years_1, x = columna1, y = columna2)
+    fig.update_layout(
+        title = titulo,
+        xaxis_title = xlabel,
+        yaxis_title = ylabel,
+        template = 'simple_white',
+        title_x = 0.5)
+    fig.show()
+
+
+# Resumen de tabla sobre calidad de vida
+def table(df1, df2):
+
+    resumen = {
+        'EnviromentSatistaction': [df1['EnvironmentSatisfaction'].mode()[0],df2['EnvironmentSatisfaction'].mode()[0]],
+        'JobSatisfaction': [df1['JobSatisfaction'].mode()[0],df2['JobSatisfaction'].mode()[0]],
+        'WorkLifeBalance': [ df1['WorkLifeBalance'].mode()[0],df2['WorkLifeBalance'].mode()[0]]
+    }
+
+    abstract = pd.DataFrame(resumen, index = ['Renuncian', 'No renuncian'])
+
+    return abstract
