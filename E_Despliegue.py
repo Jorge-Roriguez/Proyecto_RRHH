@@ -18,8 +18,8 @@ importlib.reload(funciones)
 # -------------------------- Conectarse a db para traer tablas -----------------------------
 
 # Crear conexíon 
-conn = sql.connect('C:\\Users\\jorge\\Desktop\\Proyecto RRHH\\data\\db')
-#conn = sql.connect('C:\\Users\\ESTEBAN\\Desktop\\Proyecto_RRHH\\data\\db')
+#conn = sql.connect('C:\\Users\\jorge\\Desktop\\Proyecto RRHH\\data\\db')
+conn = sql.connect('C:\\Users\\ESTEBAN\\Desktop\\Proyecto_RRHH\\data\\db')
 curr = conn.cursor()
 
 # Leer datos para 2016 
@@ -143,12 +143,132 @@ fig.update_layout(
     title_x = 0.5)
 fig.show()
 
+ 
+ #           ********* JobSatisfaction,EnvironmentSatisfaction y WorkLifeBalance  *********
+
+
+resumen = {'EnviromentSatistaction': [df_Research_1['EnvironmentSatisfaction'].mode()[0],df_Research_0['EnvironmentSatisfaction'].mode()[0]],
+           'JobSatisfaction': [df_Research_1['JobSatisfaction'].mode()[0],df_Research_0['JobSatisfaction'].mode()[0]],
+           'WorkLifeBalance': [ df_Research_1['WorkLifeBalance'].mode()[0],df_Research_0['WorkLifeBalance'].mode()[0]]}
+
+resumen1 = pd.DataFrame(resumen, index = ['Renuncian', 'No renuncian'])
+resumen1
+
+ #                               ********* MonthlyIncome  *********
+
+fig = make_subplots(rows = 1, cols = 2)
+fig.add_trace(
+    go.Histogram(x = df_Research_1['MonthlyIncome'], name = 'Empleados que renuncian', marker_color = 'red'),
+    row = 1, col = 1
+)
+
+fig.add_trace(
+    go.Histogram(x = df_Research_0['MonthlyIncome'], name = 'Empleados que no renuncian', marker_color = 'green'),
+    row = 1, col = 2
+)
+
+fig.update_layout(
+    title_text = "Histograma de los salarios mensuales",
+    template = 'simple_white')
+fig.show();
+
+ #                               ********* Age  *********
+
+fig = make_subplots(rows = 1, cols = 2)
+fig.add_trace(
+    go.Histogram(x = df_Research_1['Age'], name = 'Empleados que renuncian', marker_color = 'red'),
+    row = 1, col = 1
+)
+
+fig.add_trace(
+    go.Histogram(x = df_Research_0['Age'], name = 'Empleados que no renuncian', marker_color = 'green'),
+    row = 1, col = 2
+)
+
+fig.update_layout(
+    title_text = "Histograma de edades",
+    template = 'simple_white')
+fig.show();
+
 
 # -------------------------- Anlaisis Sales ------------------------------------------------------
 
 # DataSet para empleados que renuncian del departamento 'Sales'
 df_Sales_1 = retiros[retiros['Department'] == 'Sales']
 df_Sales_0 = no_retiros[no_retiros['Department'] == 'Sales']
+
+#           ********* JobSatisfaction,EnvironmentSatisfaction y WorkLifeBalance  *********
+
+
+resumen = {'EnviromentSatistaction': [df_Sales_1['EnvironmentSatisfaction'].mode()[0],df_Sales_0['EnvironmentSatisfaction'].mode()[0]],
+           'JobSatisfaction': [df_Sales_1['JobSatisfaction'].mode()[0],df_Sales_0['JobSatisfaction'].mode()[0]],
+           'WorkLifeBalance': [ df_Sales_1['WorkLifeBalance'].mode()[0],df_Sales_0['WorkLifeBalance'].mode()[0]]}
+
+resumen2 = pd.DataFrame(resumen, index = ['Renuncian', 'No renuncian'])
+resumen2
+
+#                                ********* Years At Company *********
+
+# Análisis de los años en la compañía que tienen los empleados retirados y no retirados
+years_1 = df_Sales_1.groupby(['YearsAtCompany'])[['EmployeeID']].count().reset_index()
+
+fig = px.line(years_1, x = 'YearsAtCompany', y = 'EmployeeID')
+fig.update_layout(
+    title ='<b>Renuncias por años en la compañía<b>',
+    xaxis_title = 'Años',
+    yaxis_title = 'Cantidad',
+    template = 'simple_white',
+    title_x = 0.5)
+fig.show()
+
+years_0 = df_Sales_0.groupby(['YearsAtCompany'])[['EmployeeID']].count().reset_index()
+
+fig = px.line(years_0, x = 'YearsAtCompany', y = 'EmployeeID')
+fig.update_layout(
+    title ='<b>Permanencia en la compañía<b>',
+    xaxis_title = 'Años',
+    yaxis_title = 'Cantidad',
+    template = 'simple_white',
+    title_x = 0.5)
+fig.show()
+
+ #                               ********* MonthlyIncome  *********
+
+fig = make_subplots(rows = 1, cols = 2)
+fig.add_trace(
+    go.Histogram(x = df_Sales_1['MonthlyIncome'], name = 'Empleados que renuncian', marker_color = 'red'),
+    row = 1, col = 1
+)
+
+fig.add_trace(
+    go.Histogram(x = df_Sales_0['MonthlyIncome'], name = 'Empleados que no renuncian', marker_color = 'green'),
+    row = 1, col = 2
+)
+
+fig.update_layout(
+    title_text = "Histograma de los salarios mensuales",
+    template = 'simple_white')
+fig.show();
+
+
+ #                               ********* Age  *********
+
+fig = make_subplots(rows = 1, cols = 2)
+fig.add_trace(
+    go.Histogram(x = df_Sales_1['Age'], name = 'Empleados que renuncian', marker_color = 'red'),
+    row = 1, col = 1
+)
+
+fig.add_trace(
+    go.Histogram(x = df_Sales_0['Age'], name = 'Empleados que no renuncian', marker_color = 'green'),
+    row = 1, col = 2
+)
+
+fig.update_layout(
+    title_text = "Histograma de edades",
+    template = 'simple_white')
+fig.show();
+
 
 
 # -------------------------- Anlaisis Human Resources --------------------------------------------
@@ -157,3 +277,72 @@ df_Sales_0 = no_retiros[no_retiros['Department'] == 'Sales']
 df_Human_1 = retiros[retiros['Department'] == 'Human Resources']
 df_Human_0 = no_retiros[no_retiros['Department'] == 'Human Resources']
 
+#           ********* JobSatisfaction,EnvironmentSatisfaction y WorkLifeBalance  *********
+
+
+resumen = {'EnviromentSatistaction': [df_Human_1['EnvironmentSatisfaction'].mode()[0],df_Human_0['EnvironmentSatisfaction'].mode()[0]],
+           'JobSatisfaction': [df_Human_1['JobSatisfaction'].mode()[0],df_Human_0['JobSatisfaction'].mode()[0]],
+           'WorkLifeBalance': [ df_Human_1['WorkLifeBalance'].mode()[0],df_Human_0['WorkLifeBalance'].mode()[0]]}
+
+resumen2 = pd.DataFrame(resumen, index = ['Renuncian', 'No renuncian'])
+resumen2
+
+ #                               ********* MonthlyIncome  *********
+
+fig = make_subplots(rows = 1, cols = 2)
+fig.add_trace(
+    go.Histogram(x = df_Human_1['MonthlyIncome'], name = 'Empleados que renuncian', marker_color = 'red'),
+    row = 1, col = 1
+)
+
+fig.add_trace(
+    go.Histogram(x = df_Human_0['MonthlyIncome'], name = 'Empleados que no renuncian', marker_color = 'green'),
+    row = 1, col = 2
+)
+
+fig.update_layout(
+    title_text = "Histograma de los salarios mensuales",
+    template = 'simple_white')
+fig.show();
+
+
+ #                               ********* Age  *********
+
+fig = make_subplots(rows = 1, cols = 2)
+fig.add_trace(
+    go.Histogram(x = df_Human_1['Age'], name = 'Empleados que renuncian', marker_color = 'red'),
+    row = 1, col = 1
+)
+
+fig.add_trace(
+    go.Histogram(x = df_Human_0['Age'], name = 'Empleados que no renuncian', marker_color = 'green'),
+    row = 1, col = 2
+)
+
+fig.update_layout(
+    title_text = "Histograma de edades",
+    template = 'simple_white')
+fig.show();
+
+# Análisis de los años en la compañía que tienen los empleados retirados y no retirados
+years_1 = df_Human_1.groupby(['YearsAtCompany'])[['EmployeeID']].count().reset_index()
+
+fig = px.line(years_1, x = 'YearsAtCompany', y = 'EmployeeID')
+fig.update_layout(
+    title ='<b>Renuncias por años en la compañía<b>',
+    xaxis_title = 'Años',
+    yaxis_title = 'Cantidad',
+    template = 'simple_white',
+    title_x = 0.5)
+fig.show()
+
+years_0 = df_Human_1.groupby(['YearsAtCompany'])[['EmployeeID']].count().reset_index()
+
+fig = px.line(years_0, x = 'YearsAtCompany', y = 'EmployeeID')
+fig.update_layout(
+    title ='<b>Permanencia en la compañía<b>',
+    xaxis_title = 'Años',
+    yaxis_title = 'Cantidad',
+    template = 'simple_white',
+    title_x = 0.5)
+fig.show()
