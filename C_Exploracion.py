@@ -176,5 +176,3 @@ print("Apesar de la proporción desigual de empleados en los distintos niveles d
 figure(figsize = (17, 10), dpi = 70);
 fig_correlación = sns.heatmap(df_2015._get_numeric_data().corr(), annot = True);
 fig_correlación
-
-

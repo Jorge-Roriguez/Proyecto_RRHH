@@ -47,6 +47,7 @@ curr = conn.cursor()
 # Leemos tablas 2015  
 df_2015 = pd.read_sql("SELECT * FROM tabla_2015", conn)
 
+
 # ----------------------- Terminar preprocesado con Pandas ----------------------------------
 
 # 1) Ya no necesitamos el EmployeeID 
@@ -62,6 +63,7 @@ df_2015.drop(['EducationField','JobRole'], axis = 1, inplace = True)
 # 4) Convertimos categóricas a dummies
 df_2015 = pd.get_dummies(df_2015, dtype = int)
 
+
 # ----------------------------------- Selección de variables ---------------------------------
 
 # Escalamos variables y separamos variables explicativas - variable objetivo
@@ -74,6 +76,7 @@ scaler.fit(X0)
 X1 = scaler.transform(X0)
 X = pd.DataFrame(X1 , columns = X0.columns)
 X
+
 
 # ---------------------------------- Métodos Wrapper -----------------------------------------------------------
 
@@ -208,7 +211,8 @@ plt.ylabel('Variable')
 plt.title('Peso de cada variable sobre la predicción')
 plt.show()
 
-# ------------------- Exportación de datos ------------------- 
+
+# ------------------- Exportación de datos ------------------- ------------------------------
 
 joblib.dump(xg_final, 'Salidas\\xg_final.pkl' )            # Modelo con afinamiento
 joblib.dump(list_cat, 'Salidas\\list_cat.pkl')             # Variables categóricas

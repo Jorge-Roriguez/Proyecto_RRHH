@@ -89,6 +89,7 @@ df_general.isna().sum()
 df_manager.isna().sum()
 df_retirement.isna().sum() 
 
+
 # ------------------------- Conexión con SQL ------------------------------------------------------------------
 
 conn = sql.connect('C:\\Users\\jorge\\Desktop\\Proyecto RRHH\\data\\db')
@@ -111,6 +112,3 @@ funciones.ejecutar_sql('preprocesamiento.sql', curr)
 # Para iniciar a trabajar con python, convertimos las tablas tratadas de SQL a DataFrame
 df_2015 = pd.read_sql("select * from tabla_2015", conn)
 df_2016 = pd.read_sql("select * from tabla_2016", conn)
-
-#--------------------------------------------------------------------------------------------------------------
-
